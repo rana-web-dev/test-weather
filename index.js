@@ -1,6 +1,6 @@
 console.clear();
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -43,22 +43,39 @@ app.listen(PORT, () => {
         serverApi: ServerApiVersion.v1,
       });
 
-      const weather = client.db("open-weather").collection("history");
+      function run() {
+
+        const weather = client.db("open-weather").collection("history");
 
       app.post("/history", (req, res) => {
-        const data = req.body;
-        weather.insertOne(data);
-        console.log(data);
+        try {
+          const data = req.body;
+          weather.insertOne(data);
+        } finally {
+        }
       });
 
       app.get("/weather", async (req, res) => {
         try {
           const data = await weather.find({}).toArray();
           res.send(data);
-          console.log(data);
         } finally {
         }
       });
+
+      app.delete('/weather/:id', async(req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await weather.deleteOne(query);
+        console.log(result);
+      });
+
+
+      }
+
+      run();
+
+
     }
   );
 });
